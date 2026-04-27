@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>💍 Wedding AI Prompt Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
+
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8B6914;
+    --ivory: #F5F0E8;
+    --cream: #EDE4D3;
+    --black: #080808;
+    --dark: #0E0D0B;
+    --dark-2: #161410;
+    --dark-3: #1E1B16;
+    --text-muted: #8A8070;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Amiri', serif;
+    background: var(--black);
+    color: var(--ivory);
+    direction: rtl;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ── CUSTOM CURSOR ── */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--gold);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform .1s ease, width .3s, height .3s, opacity .3s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 40px; height: 40px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform .15s ease, opacity .3s;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: .04;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── CANVAS PARTICLES ── */
+  #particles-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(8,8,8,0.95) 0%, transparent 100%);
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-light);
+    padding: 10px 28px;
+    font-family: 'Amiri', serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all .3s;
+    letter-spacing: 1px;
+  }
+  .nav-cta:hover {
+    background: var(--gold);
+    color: var(--black);
+    border-color: var(--gold);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 48px 80px;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(201,168,76,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #080808 0%, #0E0D0B 100%);
+  }
+
+  /* Silhouette SVG overlay */
+  .hero-silhouette {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 900px;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  /* Golden horizontal lines */
+  .hero-line {
+    width: 1px;
+    position: absolute;
+    top: 0; bottom: 0;
+    background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+    opacity: 0.2;
+  }
+  .hero-line:nth-child(1) { left: 15%; }
+  .hero-line:nth-child(2) { left: 85%; }
+
+  .hero-eyebrow {
+    position: relative;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp .8s ease forwards .3s;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: '—';
+    margin: 0 16px;
+    opacity: .5;
+  }
+
+  .hero-ring {
+    font-size: 3.5rem;
+    margin-bottom: 24px;
+    display: block;
+    opacity: 0;
+    animation: fadeUp .8s ease forwards .5s;
+    filter: drop-shadow(0 0 30px rgba(201,168,76,0.6));
+  }
+
+  .hero-title {
+    position: relative;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards .6s;
+  }
+  .hero-title span {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dim));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle-en {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 2vw, 1.4rem);
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards .75s;
+    letter-spacing: 1px;
+  }
+
+  .hero-desc {
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    color: var(--cream);
+    max-width: 680px;
+    line-height: 2;
+    margin: 0 auto 56px;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards .9s;
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards 1s;
+  }
+  .badge {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.25);
+    color: var(--gold-light);
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  .hero-cta-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp .9s ease forwards 1.1s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--black);
+    padding: 18px 48px;
+    font-family: 'Amiri', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all .3s;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 1px;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.15);
+    transform: translateX(-100%);
+    transition: transform .4s ease;
+  }
+  .btn-primary:hover::after { transform: translateX(0); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 50px rgba(201,168,76,0.3); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold-light);
+    padding: 18px 40px;
+    font-family: 'Amiri', serif;
+    font-size: 1.1rem;
+    border: 1px solid rgba(201,168,76,0.3);
+    cursor: pointer;
+    transition: all .3s;
+    letter-spacing: 1px;
+  }
+  .btn-secondary:hover { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards 1.5s;
+  }
+  .scroll-indicator span {
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient(to bottom, var(--gold-dim), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    position: relative;
+    background: var(--dark-3);
+    border-top: 1px solid rgba(201,168,76,0.15);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    padding: 40px 48px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .stat-item {
+    text-align: center;
+    padding: 0 24px;
+    border-left: 1px solid rgba(201,168,76,0.1);
+  }
+  .stat-item:last-child { border-left: none; }
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: var(--gold);
+    display: block;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── SECTION BASE ── */
+  section {
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 72px;
+  }
+  .section-tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    color: var(--ivory);
+    line-height: 1.25;
+    margin-bottom: 20px;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  .section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 24px auto 0;
+  }
+  .section-divider::before, .section-divider::after {
+    content: '';
+    height: 1px;
+    width: 80px;
+    background: linear-gradient(to right, transparent, var(--gold-dim));
+  }
+  .section-divider::before { background: linear-gradient(to left, transparent, var(--gold-dim)); }
+  .divider-diamond {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    transform: rotate(45deg);
+  }
+
+  /* ── PROBLEM SECTION ── */
+  .problem-section {
+    padding: 120px 48px;
+    background: var(--dark);
+  }
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .problem-card {
+    background: var(--dark-2);
+    padding: 52px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform .3s;
+  }
+  .problem-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    transform: scaleX(0);
+    transition: transform .4s ease;
+  }
+  .problem-card:hover::before { transform: scaleX(1); }
+  .problem-card:hover { transform: translateY(-4px); }
+  .problem-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 24px;
+    filter: grayscale(0.3);
+  }
+  .problem-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--ivory);
+    margin-bottom: 16px;
+  }
+  .problem-card p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+
+  /* ── SOLUTION / PRODUCT SECTION ── */
+  .product-section {
+    padding: 120px 48px;
+    background: var(--black);
+  }
+  .product-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  /* Product visual mockup */
+  .product-mockup {
+    position: relative;
+  }
+  .mockup-frame {
+    position: relative;
+    background: linear-gradient(145deg, #1a1710, #0d0c09);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 48px 40px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .mockup-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .mockup-corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--gold);
+    border-style: solid;
+  }
+  .mockup-corner.tl { top: 12px; right: 12px; border-width: 1px 1px 0 0; }
+  .mockup-corner.tr { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+  .mockup-corner.bl { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+  .mockup-corner.br { bottom: 12px; left: 12px; border-width: 0 0 1px 1px; }
+  .mockup-ring {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 20px;
+    animation: float 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(201,168,76,0.5));
+  }
+  .mockup-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--gold-light);
+    margin-bottom: 8px;
+  }
+  .mockup-sub {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+  }
+  .mockup-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .mockup-pill {
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--gold-light);
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-family: 'Cormorant Garamond', serif;
+    letter-spacing: 1px;
+  }
+  .mockup-price-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    color: var(--black);
+    padding: 12px 32px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .mockup-shadow {
+    position: absolute;
+    bottom: -30px; left: 10%; right: 10%;
+    height: 30px;
+    background: radial-gradient(ellipse, rgba(201,168,76,0.15) 0%, transparent 70%);
+    filter: blur(10px);
+  }
+
+  .product-content .section-tag { text-align: right; }
+  .product-content .section-title { text-align: right; }
+  .product-content .section-divider { justify-content: flex-end; }
+
+  .product-features {
+    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .feature-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+  }
+  .feature-icon {
+    width: 44px; height: 44px;
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .feature-text h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    color: var(--ivory);
+    margin-bottom: 4px;
+  }
+  .feature-text p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* ── PROMPTS SHOWCASE ── */
+  .prompts-section {
+    padding: 120px 48px;
+    background: var(--dark);
+  }
+  .prompts-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+  }
+  .prompt-card {
+    background: var(--dark-2);
+    padding: 44px 40px;
+    position: relative;
+    overflow: hidden;
+    transition: background .3s;
+  }
+  .prompt-card:hover { background: var(--dark-3); }
+  .prompt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .prompt-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: rgba(201,168,76,0.15);
+    line-height: 1;
+    font-style: italic;
+  }
+  .prompt-cat {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 4px 12px;
+  }
+  .prompt-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--ivory);
+    margin-bottom: 12px;
+  }
+  .prompt-card p { font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; }
+  .prompt-card-glow {
+    position: absolute;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .prompt-card:hover .prompt-card-glow { opacity: 1; }
+
+  /* ── AUDIENCE ── */
+  .audience-section {
+    padding: 120px 48px;
+    background: var(--black);
+  }
+  .audience-grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .audience-card {
+    border: 1px solid rgba(201,168,76,0.1);
+    padding: 44px 32px;
+    text-align: center;
+    transition: border-color .3s, transform .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .audience-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(201,168,76,0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .audience-card:hover { border-color: rgba(201,168,76,0.3); transform: translateY(-6px); }
+  .audience-card:hover::before { opacity: 1; }
+  .audience-emoji { font-size: 2.2rem; display: block; margin-bottom: 20px; }
+  .audience-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--gold-light);
+    margin-bottom: 12px;
+  }
+  .audience-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.8; }
+
+  /* ── TOOLS STRIP ── */
+  .tools-section {
+    padding: 60px 48px;
+    background: var(--dark-3);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+  .tools-label {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.8rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+  }
+  .tools-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .tool-chip {
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.15);
+    color: var(--gold-light);
+    padding: 12px 28px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    transition: all .3s;
+  }
+  .tool-chip:hover { background: rgba(201,168,76,0.12); border-color: var(--gold); }
+
+  /* ── PRICING ── */
+  .pricing-section {
+    padding: 120px 48px;
+    background: var(--dark);
+  }
+  .pricing-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .pricing-card {
+    background: var(--dark-2);
+    border: 1px solid rgba(201,168,76,0.25);
+    position: relative;
+    overflow: hidden;
+    padding: 64px 56px;
+    text-align: center;
+  }
+  .pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .pricing-glow {
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .pricing-tag {
+    display: inline-block;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold);
+    padding: 6px 20px;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: 'Cormorant Garamond', serif;
+    margin-bottom: 32px;
+  }
+  .pricing-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    color: var(--ivory);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .pricing-amount sup {
+    font-size: 2rem;
+    vertical-align: super;
+    color: var(--gold);
+  }
+  .pricing-period {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    margin-bottom: 48px;
+  }
+  .pricing-features {
+    list-style: none;
+    margin-bottom: 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .pricing-features li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1.05rem;
+    color: var(--cream);
+  }
+  .pricing-features li .check {
+    color: var(--gold);
+    font-size: 0.9rem;
+  }
+  .pricing-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 20px;
+    font-style: italic;
+  }
+
+  /* ── TESTIMONIAL ── */
+  .testimonial-section {
+    padding: 100px 48px;
+    background: var(--black);
+    text-align: center;
+  }
+  .quote-mark {
+    font-family: 'Playfair Display', serif;
+    font-size: 8rem;
+    color: rgba(201,168,76,0.1);
+    line-height: 0.5;
+    margin-bottom: 40px;
+    display: block;
+  }
+  .testimonial-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+    font-style: italic;
+    color: var(--cream);
+    max-width: 800px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+  .testimonial-author {
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    padding: 120px 48px;
+    background: var(--dark-2);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-ring {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 32px;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px rgba(201,168,76,0.6));
+  }
+  .cta-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    color: var(--ivory);
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+  .cta-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 550px;
+    margin: 0 auto 56px;
+    line-height: 1.9;
+  }
+  .cta-guarantee {
+    margin-top: 32px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--black);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    padding: 56px 48px 40px;
+    text-align: center;
+  }
+  .footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    display: block;
+  }
+  .footer-copy {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+  .footer-copy span { color: var(--gold-dim); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes scrollPulse {
+    0% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+    50% { opacity: 1; transform: scaleY(1); }
+    100% { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 20px 24px; }
+    .hero { padding: 100px 24px 80px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(2) { border-left: none; }
+    .problem-grid { grid-template-columns: 1fr; gap: 2px; }
+    .product-inner { grid-template-columns: 1fr; gap: 48px; }
+    .product-content .section-tag,
+    .product-content .section-title,
+    .product-content .section-divider { text-align: center; justify-content: center; }
+    .prompts-grid { grid-template-columns: 1fr; }
+    .audience-grid { grid-template-columns: 1fr; }
+    .pricing-card { padding: 44px 28px; }
+    .problem-section, .product-section, .prompts-section,
+    .audience-section, .pricing-section, .cta-section { padding: 80px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Canvas for particles -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo">Wedding AI</div>
+  <button class="nav-cta" onclick="window.open('https://t.me/Djoudemoh','_blank')">
+    احصل على المنتج
+  </button>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-line"></div>
+  <div class="hero-line"></div>
+
+  <span class="hero-eyebrow">منتج رقمي احترافي</span>
+  <span class="hero-ring">💍</span>
+
+  <h1 class="hero-title">
+    Wedding AI<br/>
+    <span>Prompt Studio</span>
+  </h1>
+
+  <p class="hero-subtitle-en">50 Premium AI Prompts · Cinematic · Luxury · Timeless</p>
+
+  <p class="hero-desc">
+    اصنع صور زفاف سينمائية وبطاقات تهنئة فاخرة باستخدام الذكاء الاصطناعي
+    خلال دقائق — بدون أي خبرة في التصميم
+  </p>
+
+  <div class="hero-badges">
+    <span class="badge">25 برومبت صور زفاف</span>
+    <span class="badge">25 برومبت بطاقات تهنئة</span>
+    <span class="badge">Midjourney · DALL·E · Ideogram</span>
+  </div>
+
+  <div class="hero-cta-group">
+    <button class="btn-primary" onclick="window.open('https://t.me/Djoudemoh','_blank')">
+      🎁 احصل عليه مجاناً الآن
+    </button>
+    <button class="btn-secondary" onclick="document.getElementById('prompts').scrollIntoView({behavior:'smooth'})">
+      استعرض البرومبتات
+    </button>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ══ STATS ══ -->
+<div class="stats-bar">
+  <div class="stat-item reveal">
+    <span class="stat-number">50</span>
+    <span class="stat-label">برومبت احترافي</span>
+  </div>
+  <div class="stat-item reveal reveal-delay-1">
+    <span class="stat-number">4</span>
+    <span class="stat-label">أدوات AI مدعومة</span>
+  </div>
+  <div class="stat-item reveal reveal-delay-2">
+    <span class="stat-number">8K</span>
+    <span class="stat-label">جودة الصور</span>
+  </div>
+  <div class="stat-item reveal reveal-delay-3">
+    <span class="stat-number">∞</span>
+    <span class="stat-label">استخدام مدى الحياة</span>
+  </div>
+</div>
+
+<!-- ══ PROBLEM ══ -->
+<section class="problem-section">
+  <div class="section-header reveal">
+    <span class="section-tag">المشكلة</span>
+    <h2 class="section-title">لماذا تعاني من تصميم محتوى <em>الزفاف؟</em></h2>
+    <div class="section-divider"><div class="divider-diamond"></div></div>
+  </div>
+
+  <div class="problem-grid">
+    <div class="problem-card reveal">
+      <span class="problem-icon">💸</span>
+      <h3>تكلفة عالية</h3>
+      <p>المصورون والمصممون يطلبون مئات الدولارات لكل مشروع زفاف، مما يجعل التصميم الاحترافي بعيد المنال</p>
+    </div>
+    <div class="problem-card reveal reveal-delay-1">
+      <span class="problem-icon">❌</span>
+      <h3>برومبتات عشوائية</h3>
+      <p>البرومبتات العامة تعطي نتائج باهتة وغير احترافية لا تناسب مستوى مناسبات الزفاف الراقية</p>
+    </div>
+    <div class="problem-card reveal reveal-delay-2">
+      <span class="problem-icon">⏳</span>
+      <h3>وقت ضائع</h3>
+      <p>ساعات من المحاولات والتجارب للحصول على نتيجة مقبولة، بدلاً من التركيز على الإبداع الحقيقي</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRODUCT ══ -->
+<section class="product-section">
+  <div class="product-inner">
+
+    <div class="product-mockup reveal">
+      <div class="mockup-frame">
+        <div class="mockup-corner tl"></div>
+        <div class="mockup-corner tr"></div>
+        <div class="mockup-corner bl"></div>
+        <div class="mockup-corner br"></div>
+        <span class="mockup-ring">💍</span>
+        <div class="mockup-title">Wedding AI Prompt Studio</div>
+        <div class="mockup-sub">50 PREMIUM PROMPTS</div>
+        <div class="mockup-pills">
+          <span class="mockup-pill">Studio Portraits</span>
+          <span class="mockup-pill">Cinematic</span>
+          <span class="mockup-pill">Royal Luxury</span>
+          <span class="mockup-pill">Romantic Outdoor</span>
+          <span class="mockup-pill">Greeting Cards</span>
+          <span class="mockup-pill">Family Blessings</span>
+        </div>
+        <div class="mockup-price-badge">🎁 مجاني — لفترة الإطلاق</div>
+      </div>
+      <div class="mockup-shadow"></div>
+    </div>
+
+    <div class="product-content reveal reveal-delay-2">
+      <span class="section-tag">الحل الاحترافي</span>
+      <h2 class="section-title">مجموعة برومبتات <em>مُختبَرة ومضمونة</em></h2>
+      <div class="section-divider"><div class="divider-diamond"></div></div>
+
+      <div class="product-features">
+        <div class="feature-row">
+          <div class="feature-icon">📸</div>
+          <div class="feature-text">
+            <h4>25 برومبت صور الزفاف</h4>
+            <p>استوديو فاخر · شاطئ رومانسي · قلعة أوروبية · سينمائي درامي · ملكي فاخر</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon">💌</div>
+          <div class="feature-text">
+            <h4>25 برومبت بطاقات التهنئة</h4>
+            <p>للعريس والعروس · من الأصدقاء والأهل · أساليب إسلامية وعربية وعالمية</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-text">
+            <h4>نتائج جاهزة للنشر فوراً</h4>
+            <p>كل برومبت مُحسَّن لجودة 8K مع تعليمات التخصيص ونصائح الاستخدام</p>
+          </div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon">🔓</div>
+          <div class="feature-text">
+            <h4>ترخيص تجاري كامل</h4>
+            <p>استخدم النتائج في مشاريعك التجارية وبيعها بحرية كاملة</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ PROMPTS SHOWCASE ══ -->
+<section class="prompts-section" id="prompts">
+  <div class="section-header reveal">
+    <span class="section-tag">نظرة داخلية</span>
+    <h2 class="section-title">عينة من <em>البرومبتات</em></h2>
+    <div class="section-divider"><div class="divider-diamond"></div></div>
+  </div>
+
+  <div class="prompts-grid" style="max-width:1200px;margin:0 auto;">
+    <div class="prompt-card reveal">
+      <div class="prompt-card-header">
+        <span class="prompt-number">01</span>
+        <span class="prompt-cat">Studio · Luxury</span>
+      </div>
+      <h3>زفاف فاخر في استوديو ملكي</h3>
+      <p>لقطة استوديو احترافية بإضاءة ذهبية درامية — العروس بفستان بالورد الكريستالي والعريس بسموكين أسود أنيق</p>
+      <div class="prompt-card-glow"></div>
+    </div>
+    <div class="prompt-card reveal reveal-delay-1">
+      <div class="prompt-card-header">
+        <span class="prompt-number">06</span>
+        <span class="prompt-cat">Outdoor · Romantic</span>
+      </div>
+      <h3>شاطئ عند الغروب الذهبي</h3>
+      <p>زوجان على رمال بيضاء ناصعة، سماء برتقالية وردية تنعكس على الأمواج — أسلوب سينمائي درامي</p>
+      <div class="prompt-card-glow"></div>
+    </div>
+    <div class="prompt-card reveal reveal-delay-2">
+      <div class="prompt-card-header">
+        <span class="prompt-number">11</span>
+        <span class="prompt-cat">Aerial · Cinematic</span>
+      </div>
+      <h3>لقطة جوية من الطائرة المسيّرة</h3>
+      <p>تصوير فوق جرف مطل على جبال خلابة — الطرحة تتمايل بالريح بأسلوب National Geographic</p>
+      <div class="prompt-card-glow"></div>
+    </div>
+    <div class="prompt-card reveal reveal-delay-3">
+      <div class="prompt-card-header">
+        <span class="prompt-number">17</span>
+        <span class="prompt-cat">Card · Islamic</span>
+      </div>
+      <h3>بطاقة إسلامية مباركة</h3>
+      <p>خط عربي أنيق مع آية قرآنية، إطار أرابيسك ذهبي، خلفية أزرق ليلي — تصميم فاخر للطباعة</p>
+      <div class="prompt-card-glow"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TOOLS ══ -->
+<div class="tools-section">
+  <p class="tools-label">يعمل مع جميع أدوات الذكاء الاصطناعي</p>
+  <div class="tools-row">
+    <span class="tool-chip">Midjourney</span>
+    <span class="tool-chip">DALL·E 3</span>
+    <span class="tool-chip">Stable Diffusion</span>
+    <span class="tool-chip">Ideogram</span>
+    <span class="tool-chip">Adobe Firefly</span>
+  </div>
+</div>
+
+<!-- ══ AUDIENCE ══ -->
+<section class="audience-section">
+  <div class="section-header reveal">
+    <span class="section-tag">لمن هذا المنتج</span>
+    <h2 class="section-title">هذا المنتج <em>صُنع لك</em></h2>
+    <div class="section-divider"><div class="divider-diamond"></div></div>
+  </div>
+
+  <div class="audience-grid">
+    <div class="audience-card reveal">
+      <span class="audience-emoji">🎨</span>
+      <h3>صناع المحتوى</h3>
+      <p>أنتج محتوى زفاف راقياً لمنصاتك بدون الحاجة لمعدات تصوير أو مصمم</p>
+    </div>
+    <div class="audience-card reveal reveal-delay-1">
+      <span class="audience-emoji">💼</span>
+      <h3>المسوّقون الرقميون</h3>
+      <p>تصاميم احترافية جاهزة للحملات الإعلانية وصفحات التواصل الاجتماعي</p>
+    </div>
+    <div class="audience-card reveal reveal-delay-2">
+      <span class="audience-emoji">🖥️</span>
+      <h3>مستخدمو Midjourney</h3>
+      <p>برومبتات مُحسَّنة ومُختبَرة توفر عليك ساعات من التجريب والمحاولات</p>
+    </div>
+    <div class="audience-card reveal reveal-delay-1">
+      <span class="audience-emoji">📱</span>
+      <h3>صفحات التهنئة والزفاف</h3>
+      <p>محتوى جاهز للنشر يومياً على صفحات متخصصة في الأفراح والتهاني</p>
+    </div>
+    <div class="audience-card reveal reveal-delay-2">
+      <span class="audience-emoji">🖼️</span>
+      <h3>مصممو الجرافيك</h3>
+      <p>أضف طبقة الذكاء الاصطناعي لخدماتك وضاعف قيمة عروضك للعملاء</p>
+    </div>
+    <div class="audience-card reveal reveal-delay-3">
+      <span class="audience-emoji">💰</span>
+      <h3>رواد الأعمال الرقميين</h3>
+      <p>استخدم البرومبتات لبناء منتجات رقمية جديدة أو تقديم خدمات متخصصة</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TESTIMONIAL ══ -->
+<section class="testimonial-section">
+  <span class="quote-mark">"</span>
+  <p class="testimonial-text">
+    لم أتخيل أن برومبتاً واحداً يمكنه أن ينتج صورة بجودة المصورين المحترفين —
+    هذه المجموعة غيّرت طريقة عملي تماماً في محتوى الزفاف
+  </p>
+  <span class="testimonial-author">✦ صانع محتوى رقمي ✦</span>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section class="pricing-section" id="pricing">
+  <div class="section-header reveal">
+    <span class="section-tag">السعر</span>
+    <h2 class="section-title">مجاني الآن — <em>مدفوع قريباً</em></h2>
+    <div class="section-divider"><div class="divider-diamond"></div></div>
+  </div>
+
+  <div class="pricing-inner">
+    <div class="pricing-card reveal">
+      <div class="pricing-glow"></div>
+      <div class="pricing-tag">🎁 مجاني تماماً — لفترة محدودة</div>
+
+      <div class="pricing-amount" style="font-size:4rem;">
+        مجاني
+      </div>
+      <p class="pricing-period">متاح الآن · لفترة الإطلاق فقط</p>
+
+      <ul class="pricing-features">
+        <li><span class="check">✦</span> 25 برومبت صور زفاف احترافية</li>
+        <li><span class="check">✦</span> 25 برومبت بطاقات تهنئة فاخرة</li>
+        <li><span class="check">✦</span> جاهز لـ Midjourney · DALL·E · Ideogram</li>
+        <li><span class="check">✦</span> نصائح التخصيص وأفضل الممارسات</li>
+        <li><span class="check">✦</span> ترخيص استخدام تجاري كامل</li>
+        <li><span class="check">✦</span> تحديثات مجانية مستقبلاً</li>
+      </ul>
+
+      <button class="btn-primary" style="width:100%;font-size:1.2rem;padding:22px" onclick="window.open('https://t.me/Djoudemoh','_blank')">
+        🎁 احصل عليه مجاناً على تيليغرام
+      </button>
+
+      <p class="pricing-note">⚡ العرض المجاني لفترة محدودة — استغل الفرصة الآن</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FINAL CTA ══ -->
+<section class="cta-section">
+  <div class="cta-bg-glow"></div>
+  <span class="cta-ring">💍</span>
+  <h2 class="cta-title">احصل عليه مجاناً — الآن</h2>
+  <p class="cta-subtitle">
+    50 برومبت جاهز ومُختبَر — مجاناً لفترة الإطلاق فقط.<br/>تواصل معنا على تيليغرام واحصل على نسختك فوراً
+  </p>
+  <button class="btn-primary" style="font-size:1.2rem;padding:22px 64px" onclick="window.open('https://t.me/Djoudemoh','_blank')">
+    🎁 احصل عليه مجاناً على تيليغرام
+  </button>
+  <p class="cta-guarantee">⚡ &nbsp; العرض المجاني لفترة محدودة · سيصبح مدفوعاً قريباً</p>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <span class="footer-logo">💍 Wedding AI Prompt Studio</span>
+  <p class="footer-copy">
+    جميع الحقوق محفوظة <span>©</span> 2025 &nbsp;·&nbsp;
+    منتج رقمي احترافي
+  </p>
+</footer>
+
+<script>
+// ── CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animate() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animate);
+})();
+document.querySelectorAll('button, a, .prompt-card, .audience-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '20px'; cursor.style.height = '20px';
+    ring.style.transform = 'translate(-50%,-50%) scale(1.5)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '12px'; cursor.style.height = '12px';
+    ring.style.transform = 'translate(-50%,-50%) scale(1)';
+  });
+});
+
+// ── PARTICLES
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+const GOLD = [201, 168, 76];
+const particles = Array.from({length: 60}, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  r: Math.random() * 1.2 + 0.3,
+  vx: (Math.random() - 0.5) * 0.15,
+  vy: -Math.random() * 0.2 - 0.05,
+  o: Math.random() * 0.4 + 0.05,
+}));
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${GOLD[0]},${GOLD[1]},${GOLD[2]},${p.o})`;
+    ctx.fill();
+    p.x += p.vx; p.y += p.vy;
+    if (p.y < -5) { p.y = canvas.height + 5; p.x = Math.random() * canvas.width; }
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ── SCROLL REVEAL
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+// ── COUNTER ANIMATION
+function animateCount(el, target, suffix='') {
+  let current = 0;
+  const step = target / 50;
+  const interval = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = (Number.isInteger(target) ? Math.round(current) : current.toFixed(0)) + suffix;
+    if (current >= target) clearInterval(interval);
+  }, 30);
+}
+const statsObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.stat-number').forEach(el => {
+        const txt = el.textContent.trim();
+        if (txt === '50') animateCount(el, 50);
+        else if (txt === '4') animateCount(el, 4);
+        else if (txt === '8K') { /* leave as is */ }
+        else if (txt === '∞') { /* leave as is */ }
+      });
+      statsObserver.disconnect();
+    }
+  });
+}, { threshold: 0.5 });
+const statsBar = document.querySelector('.stats-bar');
+if (statsBar) statsObserver.observe(statsBar);
+</script>
+</body>
+</html>
